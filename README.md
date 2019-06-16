@@ -1,14 +1,15 @@
 # Jupyter client for TeXmacs
 
-(c) 2019 Massimiliano Gubinelli
+Version 0.1.0 -- (c) 2019 Massimiliano Gubinelli
 
 Allows for interactive TeXmacs sessions with Jupyter kernels such as IPython, IJulia, IRKernel.
 
+In development, many things to fix: history, rich output, non-textual output, interaction, help...
 
 Based on Jupyter console, a terminal-based console frontend for Jupyter kernels.
 Jupyter code is released under a modified BSD license, see COPYING.md
 
-# Info about Jupyter cosole (to be reviewed)
+## Info about Jupyter cosole (to be reviewed)
 
 To start the console with a particular kernel, ask for it by name::
 
