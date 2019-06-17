@@ -40,39 +40,6 @@ else:
     _input = raw_input
 
 
-def ask_yes_no(prompt, default=None, interrupt=None):
-    """Asks a question and returns a boolean (y/n) answer.
-
-    If default is given (one of 'y','n'), it is used if the user input is
-    empty. If interrupt is given (one of 'y','n'), it is used if the user
-    presses Ctrl-C. Otherwise the question is repeated until an answer is
-    given.
-
-    An EOF is treated as the default answer.  If there is no default, an
-    exception is raised to prevent infinite loops.
-
-    Valid answers are: y/yes/n/no (match is not case sensitive)."""
-
-    answers = {'y': True, 'n': False, 'yes': True, 'no': False}
-    ans = None
-    while ans not in answers.keys():
-        try:
-            ans = input(prompt + ' ').lower()
-            if not ans:  # response was an empty string
-                ans = default
-        except KeyboardInterrupt:
-            if interrupt:
-                ans = interrupt
-        except EOFError:
-            if default in answers.keys():
-                ans = default
-                print()
-            else:
-                raise
-
-    return answers[ans]
-
-
 class ZMQTerminalInteractiveShell(SingletonConfigurable):
     readline_use = False
 
@@ -154,7 +121,7 @@ class ZMQTerminalInteractiveShell(SingletonConfigurable):
     )
 
     mime_preference = List(
-        default_value=['image/png', 'image/jpeg', 'image/svg+xml'],
+        default_value=['image/eps', 'image/ps', 'image/png', 'image/jpeg', 'image/svg+xml'],
         config=True, help=
         """
         Preferred object representation MIME type in order.  First
@@ -168,6 +135,7 @@ class ZMQTerminalInteractiveShell(SingletonConfigurable):
         own is_complete handler.
         """
     )
+
     kernel_is_complete_timeout = Float(1, config=True,
         help="""Timeout (in seconds) for giving up on a kernel's is_complete
         response.
@@ -365,6 +333,10 @@ class ZMQTerminalInteractiveShell(SingletonConfigurable):
         # execute takes 'hidden', which is the inverse of store_hist
         msg_id = self.client.execute(cell, not store_history)
 
+        # start reply to TeXmacs
+        sys.stdout.write(DATA_BEGIN + "verbatim:")
+        sys.stdout.flush()
+
         # first thing is wait for any side effects (output, stdin, etc.)
         self._executing = True
         self._execution_state = "busy"
@@ -388,6 +360,11 @@ class ZMQTerminalInteractiveShell(SingletonConfigurable):
             else:
                 break
         self._executing = False
+
+        # end reply to TeXmacs
+        sys.stdout.write(DATA_END)
+        sys.stdout.flush()
+
 
     #-----------------
     # message handlers
@@ -502,6 +479,9 @@ class ZMQTerminalInteractiveShell(SingletonConfigurable):
             msg_type = sub_msg['header']['msg_type']
             parent = sub_msg["parent_header"]
 
+            ## log the full messages to TeXmacs (for debugging only)
+            flush_err(str(sub_msg) + "\n") 
+
             # Update execution_count in case it changed in another session
             if msg_type == "execute_input":
                 self.execution_count = int(sub_msg["content"]["execution_count"]) + 1
@@ -574,12 +554,16 @@ class ZMQTerminalInteractiveShell(SingletonConfigurable):
                         flush_err (frame)
 
     _imagemime = {
+        'image/eps': 'eps',
+        'image/ps': 'ps',
         'image/png': 'png',
         'image/jpeg': 'jpeg',
         'image/svg+xml': 'svg',
     }
 
     def handle_rich_data(self, data):
+        for k in data.items():
+            flush_err(k + ":" + data[k] + "\n") 
         for mime in self.mime_preference:
             if mime in data and mime in self._imagemime:
                 if self.handle_image(data, mime):
@@ -587,53 +571,15 @@ class ZMQTerminalInteractiveShell(SingletonConfigurable):
         return False
 
     def handle_image(self, data, mime):
-        handler = getattr(
-            self, 'handle_image_{0}'.format(self.image_handler), None)
-        if handler:
-            return handler(data, mime)
-
-    def handle_image_PIL(self, data, mime):
-        if mime not in ('image/png', 'image/jpeg'):
-            return False
-        try:
-            from PIL import Image, ImageShow
-        except ImportError:
-            return False
-        raw = base64.decodestring(data[mime].encode('ascii'))
-        img = Image.open(BytesIO(raw))
-        return ImageShow.show(img)
-
-    def handle_image_stream(self, data, mime):
         raw = base64.decodestring(data[mime].encode('ascii'))
         imageformat = self._imagemime[mime]
-        fmt = dict(format=imageformat)
-        args = [s.format(**fmt) for s in self.stream_image_handler]
-        with open(os.devnull, 'w') as devnull:
-            proc = subprocess.Popen(
-                args, stdin=subprocess.PIPE,
-                stdout=devnull, stderr=devnull)
-            proc.communicate(raw)
-        return (proc.returncode == 0)
-
-    def handle_image_tempfile(self, data, mime):
-        raw = base64.decodestring(data[mime].encode('ascii'))
-        imageformat = self._imagemime[mime]
-        filename = 'tmp.{0}'.format(imageformat)
-        with NamedFileInTemporaryDirectory(filename) as f, \
-                open(os.devnull, 'w') as devnull:
-            f.write(raw)
-            f.flush()
-            fmt = dict(file=f.name, format=imageformat)
-            args = [s.format(**fmt) for s in self.tempfile_image_handler]
-            rc = subprocess.call(args, stdout=devnull, stderr=devnull)
-        return (rc == 0)
-
-    def handle_image_callable(self, data, mime):
-        res = self.callable_image_handler(data)
-        if res is not False:
-            # If handler func returns e.g. None, assume it has handled the data.
-            res = True
-        return res
+        filename = 'jupyter-output.{0}'.format(imageformat)
+        code_path = os.getenv("TEXMACS_HOME_PATH") +\
+            "/system/tmp/" + filename
+        with open(code_path, 'wb') as code_file:
+            code_file.write(raw)
+        flush_file (code_path)
+        return True
 
     def handle_input_request(self, msg_id, timeout=0.1):
         """ Method to capture raw_input
