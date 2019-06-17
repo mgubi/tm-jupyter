@@ -4,19 +4,33 @@
 
 <\body>
   <\wide-tabular>
-    <tformat|<cwith|1|1|1|1|cell-lsep|.3em>|<cwith|1|1|1|1|cell-rsep|.3em>|<cwith|1|1|1|1|cell-bsep|.3em>|<cwith|1|1|1|1|cell-tsep|.3em>|<cwith|1|1|1|1|cell-background|dark
-    magenta>|<table|<row|<\cell>
-      <with|font-series|bold|<with|color|light grey|Some test for the
-      <name|Jupyter> session, for the moment using the <name|IPython>
-      kernel.>>
+    <tformat|<cwith|1|1|1|1|cell-lsep|.3em>|<cwith|1|1|1|1|cell-rsep|.3em>|<cwith|1|1|1|1|cell-bsep|.3em>|<cwith|1|1|1|1|cell-tsep|.3em>|<cwith|1|1|1|1|cell-background|pastel
+    orange>|<table|<row|<\cell>
+      Some test for the <name|Jupyter> session, for the moment using the
+      <name|IPython> kernel.
     </cell>>>>
   </wide-tabular>
+
+  \;
 
   <with|font-series|bold|TODO>
 
   <\itemize-dot>
     <item>Loot at <hlink|jupyter-matplotlib|https://github.com/matplotlib/jupyter-matplotlib>
     for examples of interactive code we could support.
+
+    <item>PS image output still does not work from matplotlib. Try to
+    understand what really happens in IPython<text-dots>
+
+    <item>History and command completion are not yet implemented.
+
+    <item>Tracebacks and shell commands returns ANSI colored text, we need to
+    override this or parse it correctly.
+
+    <item>We would like to have syntax-coloring for the code, maybe direclty
+    supported from the Jupyter kernel (e.g. IPython) since we do not want to
+    implement all the possible syntax coloring ourselves (but this could have
+    the advantage to be available offline)
   </itemize-dot>
 
   \;
@@ -544,5 +558,10 @@
   </session>
 </body>
 
-<initial|<\collection>
-</collection>>
+<\initial>
+  <\collection>
+    <associate|font|pagella>
+    <associate|font-family|rm>
+    <associate|math-font|math-pagella>
+  </collection>
+</initial>
