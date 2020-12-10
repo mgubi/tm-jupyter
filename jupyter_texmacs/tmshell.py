@@ -20,7 +20,7 @@ except ImportError:
 
 from zmq import ZMQError
 from IPython.core import page
-from IPython.utils.py3compat import cast_unicode_py2, input
+from ipython_genutils.py3compat import cast_unicode_py2, input
 from ipython_genutils.tempdir import NamedFileInTemporaryDirectory
 from traitlets import (Bool, Integer, Float, Unicode, List, Dict, Enum,
                        Instance, Any)
