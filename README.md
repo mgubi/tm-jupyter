@@ -15,7 +15,7 @@ jupyter_console is released under a modified BSD license, see COPYING.md
 
 To install the plugin, clone the repository, rename its directory to `jupyter` and copy it into either the `$TEXMACS_PATH/plugins` or `$TEXMACS_HOME_PATH/plugins`. As stated in the TeXmacs documentation: by default, the path `$TEXMACS_HOME_PATH` equals `%appdata%\TeXmacs` on Windows or `$HOME/.TeXmacs` on GNU/Linux and macOS.
 
-## Info about Jupyter console (to be reviewed)
+## Info about Jupyter console
 
 To start the console with a particular kernel, ask for it by name::
 
@@ -27,6 +27,7 @@ A list of available kernels can be seen with::
 
     jupyter kernelspec list
 
+To use a specific kernel in the TeXmacs plugin the file `init-jupyter.scm` needs to be edited. An option like `--kernel=julia-1.5` can be added to the `tm_jupyter` command in the `jupyter-launcher` function.
 
 ## Additional resources
 - [Project Jupyter website](https://jupyter.org)
