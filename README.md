@@ -11,8 +11,11 @@ jupyter_console is released under a modified BSD license, see COPYING.md
 
 - [Jupyter protocol](https://jupyter-client.readthedocs.io/en/latest/messaging.html#messaging)
 
+## Installation
 
-## Info about Jupyter cosole (to be reviewed)
+To install the plugin, clone the repository, rename its directory to `jupyter` and copy it into either the `$TEXMACS_PATH/plugins` or `$TEXMACS_HOME_PATH/plugins`. As stated in the TeXmacs documentation: by default, the path `$TEXMACS_HOME_PATH` equals `%appdata%\TeXmacs` on Windows or `$HOME/.TeXmacs` on GNU/Linux and macOS.
+
+## Info about Jupyter console (to be reviewed)
 
 To start the console with a particular kernel, ask for it by name::
 
