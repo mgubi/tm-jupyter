@@ -480,7 +480,8 @@ class ZMQTerminalInteractiveShell(SingletonConfigurable):
             parent = sub_msg["parent_header"]
 
             ## log the full messages to TeXmacs (for debugging only)
-            flush_err(str(sub_msg) + "\n") 
+            flush_debug("--- IOPub message ---\n")
+            flush_debug(str(sub_msg) + "\n") 
 
             # Update execution_count in case it changed in another session
             if msg_type == "execute_input":
@@ -562,8 +563,10 @@ class ZMQTerminalInteractiveShell(SingletonConfigurable):
     }
 
     def handle_rich_data(self, data):
-        for k in data.items():
-            flush_err(k + ":" + data[k] + "\n") 
+        flush_debug("--handle_rich_data---\n")
+        for k,v in data.items():
+            flush_debug(k + ":" + v + "\n") 
+
         for mime in self.mime_preference:
             if mime in data and mime in self._imagemime:
                 if self.handle_image(data, mime):
@@ -571,7 +574,7 @@ class ZMQTerminalInteractiveShell(SingletonConfigurable):
         return False
 
     def handle_image(self, data, mime):
-        raw = base64.decodestring(data[mime].encode('ascii'))
+        raw = base64.decodebytes(data[mime].encode('ascii'))
         imageformat = self._imagemime[mime]
         filename = 'jupyter-output.{0}'.format(imageformat)
         code_path = os.getenv("TEXMACS_HOME_PATH") +\

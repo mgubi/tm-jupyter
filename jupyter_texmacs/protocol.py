@@ -19,6 +19,7 @@ DATA_END = chr(5)
 DATA_ESCAPE = chr(27)
 DATA_COMMAND = chr(16)
 
+TM_DEBUG = False
 
 def data_begin():
     """Signal the beginning of data to TeXmacs."""
@@ -68,3 +69,7 @@ def flush_err(content):
     os.sys.stderr.write("verbatim:" + content)
     os.sys.stderr.write(DATA_END)
     os.sys.stderr.flush() 
+    
+def flush_debug(content):
+    if TM_DEBUG:
+        flush_err(content)
