@@ -22,12 +22,12 @@ DATA_COMMAND = chr(16)
 
 def data_begin():
     """Signal the beginning of data to TeXmacs."""
-    os.sys.stdout.write(chr(2))
+    os.sys.stdout.write(DATA_BEGIN)
 
 
 def data_end():
     """Signal the end of data to TeXmacs."""
-    os.sys.stdout.write(chr(5))
+    os.sys.stdout.write(DATA_END)
     os.sys.stdout.flush()
 
 
@@ -64,7 +64,7 @@ def flush_ps(content):
     flush_any ("ps:" + content)
 
 def flush_err(content):
-    os.sys.stderr.write(chr(2))
+    os.sys.stderr.write(DATA_BEGIN)
     os.sys.stderr.write("verbatim:" + content)
-    os.sys.stderr.write(chr(5))
+    os.sys.stderr.write(DATA_END)
     os.sys.stderr.flush() 
