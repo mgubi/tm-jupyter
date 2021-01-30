@@ -552,7 +552,7 @@ class ZMQTerminalInteractiveShell(SingletonConfigurable):
 
                 elif msg_type == 'error':
                     for frame in sub_msg["content"]["traceback"]:
-                        flush_err (frame)
+                        flush_err (frame + "\n")
 
     _imagemime = {
         'image/eps': 'eps',
@@ -563,7 +563,7 @@ class ZMQTerminalInteractiveShell(SingletonConfigurable):
     }
 
     def handle_rich_data(self, data):
-        flush_debug("--handle_rich_data---\n")
+        flush_debug("---handle_rich_data---\n")
         for k,v in data.items():
             flush_debug(k + ":" + v + "\n") 
 
