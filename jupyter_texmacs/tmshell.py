@@ -38,6 +38,20 @@ if py_ver == 3:
     _input = input
 else:
     _input = raw_input
+ 
+### From tmpy/completion.py   
+def from_scm_string(s):
+    if len(s) > 2 and s[0] == '"' and s[-1] == '"':
+        return s[1:-1]
+    return s
+
+def parse_complete_command(s):
+    """HACK"""
+    t1 = s.strip().strip('()').split(' ', 1)
+    t2 = t1[1].rsplit(' ', 1)
+    # Don't use strip('"') in case there are several double quotes
+    return [t1[0], from_scm_string(t2[0]), int(t2[1])]
+###
 
 
 class ZMQTerminalInteractiveShell(SingletonConfigurable):
@@ -290,6 +304,21 @@ class ZMQTerminalInteractiveShell(SingletonConfigurable):
             line = _input ()
             if not line:
                 continue
+            if line[0] == DATA_COMMAND:
+                # TODO: handle completion in multiline input by adding a :commander
+                # in the plugin configuration (similar to :serializer) and parse its output here
+                sf = parse_complete_command(line[1:])
+                if sf[0] == 'complete':
+                    msg_id = self.client.complete(sf[1],sf[2])
+                    # wait for the complete reply
+                    while self.client.is_alive():
+                        try:
+                            self.handle_complete_reply(msg_id, sf[1], timeout=0.05)
+                        except Empty:
+                            pass
+                        else:
+                            break
+                continue
             lines = [line]
             while line != "<EOF>":
                 line = _input ()
@@ -398,6 +427,23 @@ class ZMQTerminalInteractiveShell(SingletonConfigurable):
                 pass
 
             self.execution_count = int(content["execution_count"] + 1)
+
+    def handle_complete_reply(self, msg_id, code=None, timeout=None):
+        msg = self.client.shell_channel.get_msg(block=False, timeout=timeout)
+        if msg["parent_header"].get("msg_id", None) == msg_id:
+            status = msg["content"].get("status", None)
+            matches = msg["content"].get("matches", None)
+            cursor_start = msg["content"].get("cursor_start", None)
+            cursor_end= msg["content"].get("cursor_end", None)
+            if status == 'ok':
+                # Jupyter sends autocompletion with a prefix, e.g. '%alias' to complete 'a'
+                # TeXmacs can't handle these (?)
+                matches = [m[(cursor_end-cursor_start):] for m in matches if m.startswith(code[cursor_start:cursor_end])]
+                code = "\"" + code[cursor_start:cursor_end] + "\""
+#                TODO: handle cases where cursor_start == cursor_end, e.g. when completing 'my_var.'
+#                   Jupyter indicates the text to be replaced by the completion, while TeXmacs expects a non-empty root
+                matches = ' '.join(["\"" + m + "\"" for m in matches])
+                flush_scheme("(tuple " + code + " " + matches + ")")
 
     def handle_is_complete_reply(self, msg_id, timeout=None):
         """
