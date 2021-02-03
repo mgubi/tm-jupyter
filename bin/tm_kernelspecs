@@ -1,0 +1,6 @@
+#!/usr/bin/env python3
+
+import jupyter_client
+M = jupyter_client.kernelspec.KernelSpecManager()
+for kernel in M.find_kernel_specs().keys():
+    print(kernel)
