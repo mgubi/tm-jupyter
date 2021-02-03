@@ -9,11 +9,19 @@
     (if (!= kernel "") (string-append script " --kernel=" kernel)
       script)))
 
+(define (jupyter-launchers)
+    (map (lambda (u) `(:launch ,u ,(jupyter-launcher u)))
+      (filter (lambda (k) (!= "" k))
+        (string-split (eval-system "tm_kernelspecs") #\nl)
+      )
+    )
+)
+
 (plugin-configure jupyter
   (:require (url-exists-in-path? "python"))
   (:require (url-exists-in-path? "tm_jupyter"))
   (:require (url-exists-in-path? "tm_kernelspecs"))
   (:launch ,(jupyter-launcher ""))
-  (:launch "julia-1.5" ,(jupyter-launcher "julia-1.5"))
+  ,@(jupyter-launchers)
   (:serializer ,jupyter-serialize)
   (:session "Jupyter"))
