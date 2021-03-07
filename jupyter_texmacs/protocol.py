@@ -7,6 +7,7 @@
 ##               (C) 2012  Adrian Soto
 ##               (C) 2014  Miguel de Benito Delgado, mdbenito@texmacs.org
 ##               (C) 2019  Darcy Shen
+##               (C) 2021  Jeroen Wouters
 ##
 ## This software falls under the GNU general public license version 3 or later.
 ## It comes WITHOUT ANY WARRANTY WHATSOEVER. For details, see the file LICENSE
@@ -51,7 +52,8 @@ def filter_ansi(text):
     # SGR code 0 resets the appearance
 
     # match opening \x1B\[ followed by 30-37, 0, 1 or 01 one or more times seperated by ; and closed by m. Use matching groups to retrieve the codes.
-    ansi_color_re = re.compile(r'\x1B\[(3[0-7]|0|0?1)(?:;(3[0-7]|0|0?1))*m')
+    ansi_color_re = re.compile(r'\x1B\[(3[0-7]|0|0?1|4|22|24|39)(?:;(3[0-7]|0|0?1|4|22|24|39))*m')
+    # Julia help also uses [4m (underline), [22m (normal intensity), [24m (not underlined), [39m (default foreground color), 
     return ansi_color_re.sub('', text) 
 
 def flush_any (out_str):
@@ -65,6 +67,9 @@ def flush_any (out_str):
 
 def flush_verbatim(content):
     flush_any ("verbatim:" + content)
+    
+def flush_latex(content):
+    flush_any ("latex:" + content)
 
 def flush_prompt(prompt):
     flush_any ("prompt#" + prompt)
