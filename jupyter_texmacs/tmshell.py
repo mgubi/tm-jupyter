@@ -574,7 +574,10 @@ class ZMQTerminalInteractiveShell(SingletonConfigurable):
         return False
 
     def handle_image(self, data, mime):
-        raw = base64.decodebytes(data[mime].encode('ascii'))
+        if mime == 'image/svg+xml':
+            raw = data[mime].encode('ascii')
+        else:
+            raw = base64.decodebytes(data[mime].encode('ascii'))
         imageformat = self._imagemime[mime]
         filename = 'jupyter-output.{0}'.format(imageformat)
         code_path = os.getenv("TEXMACS_HOME_PATH") +\
