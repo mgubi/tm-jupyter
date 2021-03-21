@@ -37,3 +37,6 @@
   ,@(jupyter-launchers)
   (:serializer ,jupyter-serialize)
   (:session "Jupyter"))
+
+(when (supports-jupyter?)
+  (import-from (jupyter-widgets)))
