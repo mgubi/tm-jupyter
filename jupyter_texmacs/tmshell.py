@@ -32,6 +32,8 @@ from . import __version__
 
 from .protocol import *
 
+def as_scm_string (text):
+    return '"%s"' % text.replace('\\', '\\\\').replace('"', '\\"')
 
 py_ver = sys.version_info[0]
 if py_ver == 3:
@@ -558,8 +560,11 @@ class ZMQTerminalInteractiveShell(SingletonConfigurable):
                         flush_verbatim (self.other_output_prefix)
                     format_dict = sub_msg["content"]["data"]
                     self.handle_rich_data(format_dict)
-
-                    if 'text/plain' not in format_dict:
+                    
+                    if 'text/latex' in format_dict:
+                        flush_command ('(tmju-open-help %s)' % (as_scm_string(format_dict['text/latex']),))
+                        continue
+                    elif 'text/plain' not in format_dict:
                         continue
 
                     # prompt_toolkit writes the prompt at a slightly lower level,
@@ -620,7 +625,10 @@ class ZMQTerminalInteractiveShell(SingletonConfigurable):
         return False
 
     def handle_image(self, data, mime):
-        raw = base64.decodebytes(data[mime].encode('ascii'))
+        if mime == 'image/svg+xml':
+            raw = data[mime].encode('ascii')
+        else:
+            raw = base64.decodebytes(data[mime].encode('ascii'))
         imageformat = self._imagemime[mime]
         filename = 'jupyter-output.{0}'.format(imageformat)
         code_path = os.getenv("TEXMACS_HOME_PATH") +\
