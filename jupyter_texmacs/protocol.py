@@ -35,7 +35,8 @@ def data_end():
 
 
 def texmacs_escape(data):
-    return data.replace(DATA_BEGIN.encode(), (DATA_ESCAPE + DATA_BEGIN).encode()) \
+    return data.replace(DATA_ESCAPE.encode(), (DATA_ESCAPE + DATA_ESCAPE).encode()) \
+               .replace(DATA_BEGIN.encode(), (DATA_ESCAPE + DATA_BEGIN).encode()) \
                .replace(DATA_END.encode(), (DATA_ESCAPE + DATA_END).encode())
 
 def filter_ansi(text):
@@ -85,6 +86,9 @@ def flush_file(path):
 
 def flush_ps(content):
     flush_any ("ps:" + content)
+
+def flush_texmacs(content):
+    flush_any ("texmacs:" + content)
 
 def flush_err(content):
     os.sys.stderr.write(DATA_BEGIN)

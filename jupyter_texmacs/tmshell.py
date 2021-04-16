@@ -627,8 +627,6 @@ class ZMQTerminalInteractiveShell(SingletonConfigurable):
                     return True
         return False
 
-
-
     def handle_image(self, data, mime):
         imageformat = self._imagemime[mime]
         if (mime == 'image/svg+xml') or (mime == 'image/ps') or (mime == 'image/eps'):
