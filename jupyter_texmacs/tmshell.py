@@ -440,6 +440,8 @@ class ZMQTerminalInteractiveShell(SingletonConfigurable):
             cursor_start = msg["content"].get("cursor_start", None)
             cursor_end= msg["content"].get("cursor_end", None)
             if status == 'ok':
+                # Jupyter sends autocompletion with a prefix, e.g. '%alias' to complete 'a'
+                # TeXmacs can't handle these (?)
                 matches = [m[(cursor_end-cursor_start):] for m in matches if m.startswith(code[cursor_start:cursor_end])]
                 if (cursor_start == cursor_end) and (cursor_start != 0):
                     code = "\"" + code[(cursor_start-1):cursor_end] + "\""
