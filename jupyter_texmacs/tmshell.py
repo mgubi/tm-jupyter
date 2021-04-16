@@ -626,7 +626,11 @@ class ZMQTerminalInteractiveShell(SingletonConfigurable):
 
     def handle_image(self, data, mime):
         if mime == 'image/svg+xml':
-            raw = data[mime].encode('ascii')
+            raw = data[mime]
+            flush_scheme("(image (tuple (raw-data " +\
+            as_scm_string(raw) +\
+            ") \"drawing.svg\") \"0.618par\" \"\" \"\" \"\")")
+            return True
         else:
             raw = base64.decodebytes(data[mime].encode('ascii'))
         imageformat = self._imagemime[mime]
