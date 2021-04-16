@@ -35,14 +35,15 @@ def data_end():
 
 
 def texmacs_escape(data):
-    return data.replace(DATA_BEGIN.encode(), (DATA_ESCAPE + DATA_BEGIN).encode()) \
+    return data.replace(DATA_ESCAPE.encode(), (DATA_ESCAPE + DATA_ESCAPE).encode()) \
+               .replace(DATA_BEGIN.encode(), (DATA_ESCAPE + DATA_BEGIN).encode()) \
                .replace(DATA_END.encode(), (DATA_ESCAPE + DATA_END).encode())
 
 def filter_ansi(text):
     # FIlter out ansi color codes
     # TODO: use regex matches to substitute with TeXmacs Scheme tags and flush_scheme
     #
-    # https://en.wikipedia.org/wiki/ANSI_escape_code#Colors 
+    # https://en.wikipedia.org/wiki/ANSI_escape_code#Colors
     # CSI n m sets the appearance of the characters with n the SGR param
     # where
     # CSI is 'ESC ['
@@ -53,8 +54,8 @@ def filter_ansi(text):
 
     # match opening \x1B\[ followed by 30-37, 0, 1 or 01 one or more times seperated by ; and closed by m. Use matching groups to retrieve the codes.
     ansi_color_re = re.compile(r'\x1B\[(3[0-7]|0|0?1|4|22|24|39)(?:;(3[0-7]|0|0?1|4|22|24|39))*m')
-    # Julia help also uses [4m (underline), [22m (normal intensity), [24m (not underlined), [39m (default foreground color), 
-    return ansi_color_re.sub('', text) 
+    # Julia help also uses [4m (underline), [22m (normal intensity), [24m (not underlined), [39m (default foreground color),
+    return ansi_color_re.sub('', text)
 
 def flush_any (out_str):
     """Feed data back to TeXmacs.
@@ -67,7 +68,7 @@ def flush_any (out_str):
 
 def flush_verbatim(content):
     flush_any ("verbatim:" + content)
-    
+
 def flush_latex(content):
     flush_any ("latex:" + content)
 
@@ -86,12 +87,15 @@ def flush_file(path):
 def flush_ps(content):
     flush_any ("ps:" + content)
 
+def flush_texmacs(content):
+    flush_any ("texmacs:" + content)
+
 def flush_err(content):
     os.sys.stderr.write(DATA_BEGIN)
     os.sys.stderr.write("verbatim:" + filter_ansi(content))
     os.sys.stderr.write(DATA_END)
-    os.sys.stderr.flush() 
-    
+    os.sys.stderr.flush()
+
 def flush_debug(content):
     if TM_DEBUG:
         flush_err(content)

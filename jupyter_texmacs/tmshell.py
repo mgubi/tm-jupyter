@@ -3,6 +3,8 @@
 from __future__ import print_function
 
 import base64
+import binascii
+import uuid
 import errno
 from getpass import getpass
 from io import BytesIO
@@ -40,8 +42,8 @@ if py_ver == 3:
     _input = input
 else:
     _input = raw_input
- 
-### From tmpy/completion.py   
+
+### From tmpy/completion.py
 def from_scm_string(s):
     if len(s) > 2 and s[0] == '"' and s[-1] == '"':
         return s[1:-1]
@@ -137,7 +139,7 @@ class ZMQTerminalInteractiveShell(SingletonConfigurable):
     )
 
     mime_preference = List(
-        default_value=['image/eps', 'image/ps', 'image/png', 'image/jpeg', 'image/svg+xml'],
+        default_value=['application/pdf', 'image/eps', 'image/ps', 'image/png', 'image/jpeg', 'image/svg+xml'],
         config=True, help=
         """
         Preferred object representation MIME type in order.  First
@@ -324,7 +326,7 @@ class ZMQTerminalInteractiveShell(SingletonConfigurable):
             lines = [line]
             while line != "<EOF>":
                 line = _input ()
-                if line == '': 
+                if line == '':
                     continue
                 lines.append(line)
             code = '\n'.join(lines[:-1])
@@ -529,7 +531,7 @@ class ZMQTerminalInteractiveShell(SingletonConfigurable):
 
             ## log the full messages to TeXmacs (for debugging only)
             flush_debug("--- IOPub message ---\n")
-            flush_debug(str(sub_msg) + "\n") 
+            flush_debug(str(sub_msg) + "\n")
 
             # Update execution_count in case it changed in another session
             if msg_type == "execute_input":
@@ -560,7 +562,7 @@ class ZMQTerminalInteractiveShell(SingletonConfigurable):
                         flush_verbatim (self.other_output_prefix)
                     format_dict = sub_msg["content"]["data"]
                     self.handle_rich_data(format_dict)
-                    
+
                     if 'text/latex' in format_dict:
                         flush_command ('(tmju-open-help %s)' % (as_scm_string(format_dict['text/latex']),))
                         continue
@@ -606,6 +608,7 @@ class ZMQTerminalInteractiveShell(SingletonConfigurable):
                         flush_err (frame + "\n")
 
     _imagemime = {
+        'application/pdf': 'pdf',
         'image/eps': 'eps',
         'image/ps': 'ps',
         'image/png': 'png',
@@ -616,7 +619,7 @@ class ZMQTerminalInteractiveShell(SingletonConfigurable):
     def handle_rich_data(self, data):
         flush_debug("---handle_rich_data---\n")
         for k,v in data.items():
-            flush_debug(k + ":" + v + "\n") 
+            flush_debug(k + ":" + v + "\n")
 
         for mime in self.mime_preference:
             if mime in data and mime in self._imagemime:
@@ -625,17 +628,14 @@ class ZMQTerminalInteractiveShell(SingletonConfigurable):
         return False
 
     def handle_image(self, data, mime):
-        if mime == 'image/svg+xml':
-            raw = data[mime].encode('ascii')
-        else:
-            raw = base64.decodebytes(data[mime].encode('ascii'))
         imageformat = self._imagemime[mime]
-        filename = 'jupyter-output.{0}'.format(imageformat)
-        code_path = os.getenv("TEXMACS_HOME_PATH") +\
-            "/system/tmp/" + filename
-        with open(code_path, 'wb') as code_file:
-            code_file.write(raw)
-        flush_file (code_path)
+        if (mime == 'image/svg+xml') or (mime == 'image/ps') or (mime == 'image/eps'):
+            raw = data[mime].encode("utf-8")
+        else:
+            raw = base64.decodebytes(data[mime].encode("ascii"))
+        flush_texmacs("<image|<tuple|<#" +
+        binascii.hexlify(raw).decode("ascii")
+        + ">|jupyter-output-" + str(uuid.uuid1()) + "." + imageformat +  ">|0.618par|||>" )
         return True
 
     def handle_input_request(self, msg_id, timeout=0.1):
