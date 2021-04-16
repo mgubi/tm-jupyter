@@ -3,6 +3,8 @@
 from __future__ import print_function
 
 import base64
+import binascii
+import uuid
 import errno
 from getpass import getpass
 from io import BytesIO
@@ -137,7 +139,7 @@ class ZMQTerminalInteractiveShell(SingletonConfigurable):
     )
 
     mime_preference = List(
-        default_value=['image/eps', 'image/ps', 'image/png', 'image/jpeg', 'image/svg+xml'],
+        default_value=['application/pdf', 'image/eps', 'image/ps', 'image/png', 'image/jpeg', 'image/svg+xml'],
         config=True, help=
         """
         Preferred object representation MIME type in order.  First
@@ -606,6 +608,7 @@ class ZMQTerminalInteractiveShell(SingletonConfigurable):
                         flush_err (frame + "\n")
 
     _imagemime = {
+        'application/pdf': 'pdf',
         'image/eps': 'eps',
         'image/ps': 'ps',
         'image/png': 'png',
@@ -624,22 +627,17 @@ class ZMQTerminalInteractiveShell(SingletonConfigurable):
                     return True
         return False
 
+
+
     def handle_image(self, data, mime):
-        if mime == 'image/svg+xml':
-            raw = data[mime]
-            flush_scheme("(image (tuple (raw-data " +\
-            as_scm_string(raw) +\
-            ") \"drawing.svg\") \"0.618par\" \"\" \"\" \"\")")
-            return True
-        else:
-            raw = base64.decodebytes(data[mime].encode('ascii'))
         imageformat = self._imagemime[mime]
-        filename = 'jupyter-output.{0}'.format(imageformat)
-        code_path = os.getenv("TEXMACS_HOME_PATH") +\
-            "/system/tmp/" + filename
-        with open(code_path, 'wb') as code_file:
-            code_file.write(raw)
-        flush_file (code_path)
+        if (mime == 'image/svg+xml') or (mime == 'image/ps') or (mime == 'image/eps'):
+            raw = data[mime].encode("utf-8")
+        else:
+            raw = base64.decodebytes(data[mime].encode("ascii"))
+        flush_texmacs("<image|<tuple|<#" +
+        binascii.hexlify(raw).decode("ascii")
+        + ">|jupyter-output-" + str(uuid.uuid1()) + "." + imageformat +  ">|0.618par|||>" )
         return True
 
     def handle_input_request(self, msg_id, timeout=0.1):
