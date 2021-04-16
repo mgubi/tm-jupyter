@@ -42,8 +42,8 @@ if py_ver == 3:
     _input = input
 else:
     _input = raw_input
- 
-### From tmpy/completion.py   
+
+### From tmpy/completion.py
 def from_scm_string(s):
     if len(s) > 2 and s[0] == '"' and s[-1] == '"':
         return s[1:-1]
@@ -326,7 +326,7 @@ class ZMQTerminalInteractiveShell(SingletonConfigurable):
             lines = [line]
             while line != "<EOF>":
                 line = _input ()
-                if line == '': 
+                if line == '':
                     continue
                 lines.append(line)
             code = '\n'.join(lines[:-1])
@@ -531,7 +531,7 @@ class ZMQTerminalInteractiveShell(SingletonConfigurable):
 
             ## log the full messages to TeXmacs (for debugging only)
             flush_debug("--- IOPub message ---\n")
-            flush_debug(str(sub_msg) + "\n") 
+            flush_debug(str(sub_msg) + "\n")
 
             # Update execution_count in case it changed in another session
             if msg_type == "execute_input":
@@ -562,7 +562,7 @@ class ZMQTerminalInteractiveShell(SingletonConfigurable):
                         flush_verbatim (self.other_output_prefix)
                     format_dict = sub_msg["content"]["data"]
                     self.handle_rich_data(format_dict)
-                    
+
                     if 'text/latex' in format_dict:
                         flush_command ('(tmju-open-help %s)' % (as_scm_string(format_dict['text/latex']),))
                         continue
@@ -619,7 +619,7 @@ class ZMQTerminalInteractiveShell(SingletonConfigurable):
     def handle_rich_data(self, data):
         flush_debug("---handle_rich_data---\n")
         for k,v in data.items():
-            flush_debug(k + ":" + v + "\n") 
+            flush_debug(k + ":" + v + "\n")
 
         for mime in self.mime_preference:
             if mime in data and mime in self._imagemime:
