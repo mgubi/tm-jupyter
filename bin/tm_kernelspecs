@@ -12,5 +12,6 @@
 
 import jupyter_client
 specManager = jupyter_client.kernelspec.KernelSpecManager()
-for kernel in specManager.find_kernel_specs().keys():
-    print(kernel)
+allspecs = specManager.get_all_specs()
+for kernel in allspecs.keys():
+    print(kernel+"\t"+allspecs[kernel]['spec']['language'])

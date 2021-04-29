@@ -23,11 +23,10 @@
 
 (define (jupyter-launchers)
     (map (lambda (u) `(:launch ,u ,(jupyter-launcher u)))
-      (filter (lambda (k) (!= "" k))
-        (string-split (eval-system "tm_kernelspecs") #\nl)
-      )
-    )
-)
+      (map (lambda (l) (car (string-split l #\tab)))
+        (filter (lambda (k) (!= "" k))
+          (string-split (eval-system "tm_kernelspecs") #\nl)
+        ))))
 
 (plugin-configure jupyter
   (:require (url-exists-in-path? "python"))
@@ -41,3 +40,13 @@
 
 (when (supports-jupyter?)
   (import-from (jupyter-widgets)))
+  
+  (tm-define jupyter-kernel-list (map (lambda (l) (cons (car l) (cdr l)))
+     (map (lambda (l) (string-split l #\tab))
+       (filter (lambda (k) (!= "" k))
+         (string-split (eval-system "tm_kernelspecs") #\nl)))))
+  
+  (tm-define (jupyter-kernel->language k)
+    (:secure #t)
+    (let ((l (tree->string k)))
+      (if (== l "default") "python" (cadr (assoc l jupyter-kernel-list)))))
