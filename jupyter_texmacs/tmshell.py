@@ -139,7 +139,8 @@ class ZMQTerminalInteractiveShell(SingletonConfigurable):
     )
 
     mime_preference = List(
-        default_value=['application/pdf', 'image/eps', 'image/ps', 'image/png', 'image/jpeg', 'image/svg+xml'],
+        default_value=['application/pdf', 'image/eps', 'image/ps', 'image/png', 
+                       'image/jpeg', 'image/svg+xml', 'text/html', 'text/markdown'],
         config=True, help=
         """
         Preferred object representation MIME type in order.  First
@@ -566,6 +567,9 @@ class ZMQTerminalInteractiveShell(SingletonConfigurable):
 
                     if 'text/latex' in format_dict:
                         flush_command ('(tmju-open-help %s)' % (as_scm_string(format_dict['text/latex']),))
+                        continue
+                    elif 'text/html' in format_dict:
+                        flush_any("html:" + format_dict['text/html'])
                         continue
                     elif 'text/plain' not in format_dict:
                         continue
