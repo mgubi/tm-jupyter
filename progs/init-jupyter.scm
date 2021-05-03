@@ -49,4 +49,4 @@
   (tm-define (jupyter-kernel->language k)
     (:secure #t)
     (let ((l (tree->string k)))
-      (if (== l "default") "python" (cadr (assoc l jupyter-kernel-list)))))
+      (if (== l "default") "python" (locase-all (cadr (assoc l jupyter-kernel-list))))))
