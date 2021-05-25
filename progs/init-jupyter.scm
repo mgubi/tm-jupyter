@@ -49,5 +49,11 @@
   (tm-define (jupyter-kernel->language k)
     (:secure #t)
     ;; Look for session name after "/" in case we're in a remote session
-    (let ((l (last (string-split (tree->string k) #\/))))
-      (if (== l "default") "python" (locase-all (cadr (assoc l jupyter-kernel-list))))))
+    (let ( (ses (last (string-split (tree->string k) #\/))) )
+      (if (== ses "default") "python"
+          (let ((lang (locase-all (cadr (assoc ses jupyter-kernel-list)))))
+          (cond
+            ((string-starts? lang "c++") "cpp")
+            ((if lang) lang)
+            (else ""))
+        ))))
