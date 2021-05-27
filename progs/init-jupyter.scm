@@ -54,6 +54,6 @@
           (let ((lang (locase-all (cadr (assoc ses jupyter-kernel-list)))))
           (cond
             ((string-starts? lang "c++") "cpp")
-            ((if lang) lang)
+            (lang lang)
             (else ""))
         ))))
