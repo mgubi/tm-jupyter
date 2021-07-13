@@ -23,11 +23,10 @@
 
 (define (jupyter-launchers)
     (map (lambda (u) `(:launch ,u ,(jupyter-launcher u)))
-      (filter (lambda (k) (!= "" k))
-        (string-split (eval-system "tm_kernelspecs") #\nl)
-      )
-    )
-)
+      (map (lambda (l) (car (string-split l #\tab)))
+        (filter (lambda (k) (!= "" k))
+          (string-split (eval-system "tm_kernelspecs") #\nl)
+        ))))
 
 (plugin-configure jupyter
   (:require (url-exists-in-path? "python"))
@@ -41,3 +40,20 @@
 
 (when (supports-jupyter?)
   (import-from (jupyter-widgets)))
+  
+  (tm-define jupyter-kernel-list (map (lambda (l) (cons (car l) (cdr l)))
+     (map (lambda (l) (string-split l #\tab))
+       (filter (lambda (k) (!= "" k))
+         (string-split (eval-system "tm_kernelspecs") #\nl)))))
+  
+  (tm-define (jupyter-kernel->language k)
+    (:secure #t)
+    ;; Look for session name after "/" in case we're in a remote session
+    (let ( (ses (last (string-split (tree->string k) #\/))) )
+      (if (== ses "default") "python"
+          (let ((lang (locase-all (cadr (assoc ses jupyter-kernel-list)))))
+          (cond
+            ((string-starts? lang "c++") "cpp")
+            (lang lang)
+            (else ""))
+        ))))

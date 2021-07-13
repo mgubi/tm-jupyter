@@ -444,9 +444,10 @@ class ZMQTerminalInteractiveShell(SingletonConfigurable):
                 # Jupyter sends autocompletion with a prefix, e.g. '%alias' to complete 'a'
                 # TeXmacs can't handle these (?)
                 matches = [m[(cursor_end-cursor_start):] for m in matches if m.startswith(code[cursor_start:cursor_end])]
-                code = "\"" + code[cursor_start:cursor_end] + "\""
-#                TODO: handle cases where cursor_start == cursor_end, e.g. when completing 'my_var.'
-#                   Jupyter indicates the text to be replaced by the completion, while TeXmacs expects a non-empty root
+                if (cursor_start == cursor_end) and (cursor_start != 0):
+                    code = "\"" + code[(cursor_start-1):cursor_end] + "\""
+                else:
+                    code = "\"" + code[cursor_start:cursor_end] + "\""
                 matches = ' '.join(["\"" + m + "\"" for m in matches])
                 flush_scheme("(tuple " + code + " " + matches + ")")
 
