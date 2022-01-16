@@ -24,7 +24,7 @@
 (define (jupyter-launchers)
     (map (lambda (u) `(:launch ,u ,(jupyter-launcher u)))
       (filter (lambda (k) (!= "" k))
-        (string-split (eval-system "tm_kernelspecs") #\nl)
+        (string-split (eval-system "tm_kernelspecs") #\newline)
       )
     )
 )
